@@ -10,6 +10,7 @@ public class ApplicationDbContext : DbContext
     {
     }
     public DbSet<Student> Students => Set<Student>();
+    public DbSet<Department> Departments => Set<Department>();
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
@@ -33,6 +34,21 @@ public class ApplicationDbContext : DbContext
                 table.HasCheckConstraint(
                     "CK_Students_Age",
                     "[Age] >= 17 AND [Age] <= 60"));
+        });
+        modelBuilder.Entity<Department>(entity =>
+        {
+            entity.HasKey(d => d.DepartmentId);
+
+            entity.Property(d => d.DepartmentName)
+                .IsRequired()
+                .HasMaxLength(100);
+
+            entity.HasIndex(d => d.DepartmentName)
+                .IsUnique();
+
+            entity.HasMany(d => d.Students)
+                .WithOne(s => s.Department)
+                .HasForeignKey(s => s.DepartmentId);
         });
     }
 }
