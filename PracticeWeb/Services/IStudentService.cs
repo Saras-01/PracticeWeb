@@ -11,7 +11,7 @@ namespace PracticeWeb.Services
 
         Task<StudentDto> AddStudentAsync(CreateStudentDto studentDto);
 
-        Task<StudentDto?> UpdateStudentAsync(int id, UpdateStudentDto studentDto)
+        Task<StudentDto?> UpdateStudentAsync(int id, UpdateStudentDto studentDto);
 
         Task<bool> DeleteStudentAsync(int id);
 
