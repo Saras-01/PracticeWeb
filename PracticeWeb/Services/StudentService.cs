@@ -1,41 +1,29 @@
 ﻿using PracticeWeb.Models;
 using PracticeWeb.DTOs;
+using PracticeWeb.Repositories;
 
 namespace PracticeWeb.Services;
 
 public class StudentService : IStudentService
 {
+    private readonly IStudentRepository _repository;
     private readonly ILogger<StudentService> _logger;
 
-    public StudentService(ILogger<StudentService> logger)
+    public StudentService(
+        IStudentRepository repository,
+        ILogger<StudentService> logger)
     {
+        _repository = repository;
         _logger = logger;
     }
 
-    private readonly List<Student> _students = new()
-    {
-        new Student
-        {
-            Id = 1,
-            Name = "Arun",
-            Email = "arun@example.com",
-            Age = 21
-        },
-        new Student
-        {
-            Id = 2,
-            Name = "Priya",
-            Email = "priya@example.com",
-            Age = 22
-        }
-    };
 
-    private int _nextId = 3;
-
-    // GET: Retrieve all students
-    public List<StudentDto> GetAllStudents()
+    public async Task<List<StudentDto>> GetAllStudentsAsync()
     {
-        return _students.Select(s => new StudentDto
+        var students = await _repository.GetAllAsync();
+
+    // GET: Retrieve all student
+        return students.Select(s => new StudentDto
         {
             Id = s.Id,
             Name = s.Name,
@@ -45,57 +33,71 @@ public class StudentService : IStudentService
     }
 
     // GET: Retrieve student by ID
-    public StudentDto? GetStudentById(int id)
+    public async Task<StudentDto?> GetStudentByIdAsync(int id)
     {
-        var student = _students.FirstOrDefault(s => s.Id == id);
+        var student = await _repository.GetByIdAsync(id);
 
-        if (student == null)
+        if (student is null)
             return null;
 
-        return new StudentDto
-        {
-            Id = student.Id,
-            Name = student.Name,
-            Email = student.Email,
-            Age = student.Age
-        };
+        return MapToDto(student);
     }
 
     // POST: Add a student
-    public StudentDto AddStudent(CreateStudentDto studentDto)
+    public async Task<StudentDto> AddStudentAsync(CreateStudentDto studentDto)
     {
-        _logger.LogInformation("Adding student with email {Email}", studentDto.Email);
         var student = new Student
         {
-            Id = _nextId++,
             Name = studentDto.Name,
             Email = studentDto.Email,
             Age = studentDto.Age
         };
+        await _repository.AddAsync(student);
+        _logger.LogInformation(
+            "Student created successfully with ID {StudentId}",
+            student.Id);
 
-        _students.Add(student);
-        _logger.LogInformation("Student created successfully with ID {StudentId}", student.Id);
-
-        return new StudentDto
-        {
-            Id = student.Id,
-            Name = student.Name,
-            Email = student.Email,
-            Age = student.Age
-        };
+        return MapToDto(student);
     }
 
     // PUT: Update a student
-    public StudentDto? UpdateStudent(int id, UpdateStudentDto studentDto)
+    public async Task<StudentDto?> UpdateStudentAsync(
+         int id,
+         UpdateStudentDto studentDto)
     {
-        var student = _students.FirstOrDefault(s => s.Id == id);
+        var student = await _repository.GetByIdAsync(id);
 
-        if (student == null)
+        if (student is null)
             return null;
 
         student.Name = studentDto.Name;
         student.Email = studentDto.Email;
         student.Age = studentDto.Age;
+        await _repository.UpdateAsync(student);
+
+        return MapToDto(student);
+    }
+
+    // DELETE: Delete a student
+    public async Task<bool> DeleteStudentAsync(int id)
+    {
+        var student = await _repository.GetByIdAsync(id);
+
+        if (student is null)
+            return false;
+
+        await _repository.DeleteAsync(student);
+
+        return true;
+    }
+    public Task<bool> EmailExistsAsync(
+        string email,
+        int? excludeStudentId = null)
+    {
+        return _repository.EmailExistsAsync(email, excludeStudentId);
+    }
+    private static StudentDto MapToDto(Student student)
+    {
         return new StudentDto
         {
             Id = student.Id,
@@ -103,24 +105,5 @@ public class StudentService : IStudentService
             Email = student.Email,
             Age = student.Age
         };
-    }
-
-    // DELETE: Delete a student
-    public bool DeleteStudent(int id)
-    {
-        var student = _students.FirstOrDefault(s => s.Id == id);
-
-        if (student == null)
-            return false;
-
-        _students.Remove(student);
-
-        return true;
-    }
-    public bool EmailExists(string email, int? excludeStudentId = null)
-    {
-        return _students.Any(s =>
-            s.Email.Equals(email, StringComparison.OrdinalIgnoreCase)
-            && s.Id != excludeStudentId);
     }
 }
