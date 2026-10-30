@@ -1,6 +1,8 @@
 ﻿using PracticeWeb.Models;
 using PracticeWeb.DTOs;
 using PracticeWeb.Repositories;
+using System.Linq;
+using Microsoft.EntityFrameworkCore;
 
 namespace PracticeWeb.Services;
 
