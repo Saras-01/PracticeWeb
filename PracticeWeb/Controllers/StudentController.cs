@@ -30,6 +30,8 @@ public class StudentController : ControllerBase
     [HttpGet("{id}")]
     public ActionResult<CreateStudentDto> GetStudentById(int id)
     {
+        if (id <= 0)
+            return BadRequest(new { message = "Student ID must be greater than zero." });
         var student = _studentService.GetStudentById(id);
 
         if (student == null)
@@ -42,6 +44,13 @@ public class StudentController : ControllerBase
     [HttpPost]
     public ActionResult<CreateStudentDto> AddStudent(CreateStudentDto studentDto)
     {
+        if (_studentService.EmailExists(studentDto.Email))
+        {
+            return Conflict(new
+            {
+                message = "A student with this email already exists."
+            });
+        }
         var createdStudent = _studentService.AddStudent(studentDto);
 
         return CreatedAtAction(
@@ -52,8 +61,18 @@ public class StudentController : ControllerBase
 
     // PUT: api/students/1
     [HttpPut("{id}")]
-    public ActionResult<CreateStudentDto> UpdateStudent(int id, CreateStudentDto updatedStudentDto studentDto)
+    public ActionResult<StudentDto> UpdateStudent(int id, CreateStudentDto UpdatedStudentDto studentDto)
     {
+        if (id <= 0)
+            return BadRequest(new { message = "Student ID must be greater than zero." });
+
+        if (_studentService.EmailExists(studentDto.Email, id))
+        {
+            return Conflict(new
+            {
+                message = "Another student with this email already exists."
+            });
+        }
         var updatedStudent = _studentService.UpdateStudent(id,studentDto);
 
         if (updatedStudent == null)
@@ -66,6 +85,8 @@ public class StudentController : ControllerBase
     [HttpDelete("{id}")]
     public IActionResult DeleteStudent(int id)
     {
+        if (id <= 0)
+            return BadRequest(new { message = "Student ID must be greater than zero." });
         var deleted = _studentService.DeleteStudent(id);
 
         if (!deleted)
