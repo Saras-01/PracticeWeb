@@ -17,5 +17,6 @@ namespace PracticeWeb.Services
 
         Task<bool> EmailExistsAsync(string email, int? excludeStudentId = null);
         Task<List<StudentDto>> SearchStudentsByNameAsync(string search);
+        Task<List<StudentDto>> GetStudentsByDepartmentIdAsync(int departmentId);
     }
 }
