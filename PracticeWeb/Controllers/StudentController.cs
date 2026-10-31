@@ -1,9 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using PracticeWeb.DTOs;
-using PracticeWeb.Models;
-using PracticeWeb.Services;
-using PracticeWeb.DTOs;
-using PracticeWeb.Models;
 using PracticeWeb.Services;
 
 namespace PracticeWeb.Controllers;
@@ -39,6 +35,7 @@ public class StudentController : ControllerBase
                 message = "Student ID must be greater than zero."
             });
         }
+
         var student = await _studentService.GetStudentByIdAsync(id);
 
         if (student is null)
@@ -54,7 +51,8 @@ public class StudentController : ControllerBase
 
     // POST: api/students
     [HttpPost]
-    public async Task<ActionResult<StudentDto>> AddStudent(CreateStudentDto studentDto)
+    public async Task<ActionResult<StudentDto>> AddStudent(
+        CreateStudentDto studentDto)
     {
         if (await _studentService.EmailExistsAsync(studentDto.Email))
         {
@@ -63,7 +61,9 @@ public class StudentController : ControllerBase
                 message = "A student with this email already exists."
             });
         }
-        var createdStudent = await _studentService.AddStudentAsync(studentDto);
+
+        var createdStudent =
+            await _studentService.AddStudentAsync(studentDto);
 
         return CreatedAtAction(
             nameof(GetStudentById),
@@ -84,7 +84,6 @@ public class StudentController : ControllerBase
                 message = "Student ID must be greater than zero."
             });
         }
-        ;
 
         if (await _studentService.EmailExistsAsync(studentDto.Email, id))
         {
@@ -93,6 +92,7 @@ public class StudentController : ControllerBase
                 message = "Another student with this email already exists."
             });
         }
+
         var updatedStudent =
             await _studentService.UpdateStudentAsync(id, studentDto);
 
@@ -118,6 +118,7 @@ public class StudentController : ControllerBase
                 message = "Student ID must be greater than zero."
             });
         }
+
         var deleted = await _studentService.DeleteStudentAsync(id);
 
         if (!deleted)
