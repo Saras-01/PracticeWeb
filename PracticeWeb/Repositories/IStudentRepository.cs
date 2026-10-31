@@ -20,5 +20,7 @@ public interface IStudentRepository
     Task DeleteAsync(Student student);
     Task<List<Student>> SearchByNameAsync(string search);
     Task<List<Student>> GetByDepartmentIdAsync(int departmentId);
+    Task<List<Student>> GetPagedAsync(int pageNumber, int pageSize);
+    Task<int> GetTotalCountAsync();
 
 }
